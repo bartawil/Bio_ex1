@@ -1,7 +1,11 @@
 import tkinter as tk
 import random
 import random
-import time
+from time import sleep
+
+import numpy as np
+
+sleep_matrix = np.zeros((100, 100))
 
 
 class GridWindow(tk.Frame):
@@ -53,8 +57,23 @@ def make_colors(grid_window, s1, s2, s3, s4):
             grid_window.set_rectangle_color(p[0], p[1], "green")
 
 
-def check_neighbour(grid_window, x, y):
+def update_color(color):
+    if color == "green":
+        return "yellow"
+    elif color == "yellow":
+        return "gray"
+    elif color == "gray":
+        return "purple"
+
+
+def check_neighbour(grid_window, x, y, received_matrix):
+    if not(100 >= x >= 0) or not(100 >= y >= 0):
+        return
     color = grid_window.canvas.itemcget(grid_window.rectangles[x][y], "fill")
+
+    if received_matrix[x][y] >= 2:
+        color = update_color(color)
+
     # s4
     if color == "green":
         return
@@ -72,7 +91,7 @@ def check_neighbour(grid_window, x, y):
             grid_window.set_rectangle_color(x, y, "red")
 
 
-def make_red(grid_window, num_of_iterations):
+def make_red(grid_window, num_of_iterations, l_generations):
     rows = grid_window.rows
     cols = grid_window.cols
     persons = []
@@ -92,13 +111,23 @@ def make_red(grid_window, num_of_iterations):
                 color = grid_window.canvas.itemcget(grid_window.rectangles[i][j], "fill")
                 if color == "red":
                     reds.append((i, j))
-        time.sleep(0.02)
+        received_matrix = np.zeros((100, 100))
         for r in reds:
-            check_neighbour(grid_window, r[0], r[1]-1)
-            check_neighbour(grid_window, r[0], r[1]+1)
-            check_neighbour(grid_window, r[0]-1, r[1])
-            check_neighbour(grid_window, r[0]+1, r[1])
+            received_matrix[r[0]][r[1]-1] = received_matrix[r[0]][r[1]-1] + 1
+            received_matrix[r[0]][r[1]+1] = received_matrix[r[0]][r[1]+1] + 1
+            received_matrix[r[0]-1][r[1]] = received_matrix[r[0]-1][r[1]] + 1
+            received_matrix[r[0]+1][r[1]] = received_matrix[r[0]+1][r[1]] + 1
 
+            if 0 < sleep_matrix[r[0]][r[1]] < l_generations:
+                sleep_matrix[r[0]][r[1]] = sleep_matrix[r[0]][r[1]] + 1
+            else:
+                sleep_matrix[r[0]][r[1]] = 0
+                check_neighbour(grid_window, r[0], r[1]-1, received_matrix)
+                check_neighbour(grid_window, r[0], r[1]+1, received_matrix)
+                check_neighbour(grid_window, r[0]-1, r[1], received_matrix)
+                check_neighbour(grid_window, r[0]+1, r[1], received_matrix)
+                sleep_matrix[r[0]][r[1]] = sleep_matrix[r[0]][r[1]] + 1
+            grid_window.update()
 
 
 def submit():
@@ -113,7 +142,8 @@ def submit():
     grid_window = create_grid(new_window, float(values[0]))
     grid_window.grid(row=0, column=1, sticky="nsew")
     make_colors(grid_window, float(values[3]), float(values[4]), float(values[5]), float(values[6]))
-    new_window.after(2000, lambda: make_red(grid_window, int(values[2])))
+    new_window.after(0, lambda: make_red(grid_window, num_of_iterations=int(values[2]), l_generations=int(values[1])))
+
 
 root = tk.Tk()
 root.geometry("400x300")
@@ -126,7 +156,7 @@ for i, title in enumerate(titles):
     label.grid(row=i, column=0, padx=5, pady=5)
 
 entry_vars = []
-default_values = [0.5, 4, 10, 0.1, 0.4, 0.4, 0.1]
+default_values = [0.8, 4, 100, 0.1, 0.4, 0.4, 0.1]
 for i in range(7):
     var = tk.StringVar(value=default_values[i])
     entry_vars.append(var)
