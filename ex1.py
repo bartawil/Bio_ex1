@@ -1,9 +1,7 @@
 import tkinter as tk
 import random
-import random
-from time import sleep
-
 import numpy as np
+from matplotlib import pyplot as plt
 
 sleep_matrix = np.zeros((100, 100))
 
@@ -67,7 +65,7 @@ def update_color(color):
 
 
 def check_neighbour(grid_window, x, y, received_matrix):
-    if not(100 >= x >= 0) or not(100 >= y >= 0):
+    if not(100 > x >= 0) or not(100 > y >= 0):
         return
     color = grid_window.canvas.itemcget(grid_window.rectangles[x][y], "fill")
 
@@ -113,10 +111,14 @@ def make_red(grid_window, num_of_iterations, l_generations):
                     reds.append((i, j))
         received_matrix = np.zeros((100, 100))
         for r in reds:
-            received_matrix[r[0]][r[1]-1] = received_matrix[r[0]][r[1]-1] + 1
-            received_matrix[r[0]][r[1]+1] = received_matrix[r[0]][r[1]+1] + 1
-            received_matrix[r[0]-1][r[1]] = received_matrix[r[0]-1][r[1]] + 1
-            received_matrix[r[0]+1][r[1]] = received_matrix[r[0]+1][r[1]] + 1
+            if (100 > r[0] >= 0) and (100 > r[1]-1 >= 0):
+                received_matrix[r[0]][r[1]-1] = received_matrix[r[0]][r[1]-1] + 1
+            if (100 > r[0] >= 0) and (100 > r[1] + 1 >= 0):
+                received_matrix[r[0]][r[1]+1] = received_matrix[r[0]][r[1]+1] + 1
+            if (100 > r[0] - 1 >= 0) and (100 > r[1] >= 0):
+                received_matrix[r[0]-1][r[1]] = received_matrix[r[0]-1][r[1]] + 1
+            if (100 > r[0] + 1 >= 0) and (100 > r[1] >= 0):
+                received_matrix[r[0]+1][r[1]] = received_matrix[r[0]+1][r[1]] + 1
 
             if 0 < sleep_matrix[r[0]][r[1]] < l_generations:
                 sleep_matrix[r[0]][r[1]] = sleep_matrix[r[0]][r[1]] + 1
@@ -128,6 +130,13 @@ def make_red(grid_window, num_of_iterations, l_generations):
                 check_neighbour(grid_window, r[0]+1, r[1], received_matrix)
                 sleep_matrix[r[0]][r[1]] = sleep_matrix[r[0]][r[1]] + 1
             grid_window.update()
+    reds = []
+    for i in range(100):
+        for j in range(100):
+            color = grid_window.canvas.itemcget(grid_window.rectangles[i][j], "fill")
+            if color == "red":
+                reds.append((i, j))
+    print(len(reds))
 
 
 def submit():
@@ -142,7 +151,7 @@ def submit():
     grid_window = create_grid(new_window, float(values[0]))
     grid_window.grid(row=0, column=1, sticky="nsew")
     make_colors(grid_window, float(values[3]), float(values[4]), float(values[5]), float(values[6]))
-    new_window.after(0, lambda: make_red(grid_window, num_of_iterations=int(values[2]), l_generations=int(values[1])))
+    make_red(grid_window, num_of_iterations=int(values[2]), l_generations=int(values[1]))
 
 
 root = tk.Tk()
@@ -156,7 +165,7 @@ for i, title in enumerate(titles):
     label.grid(row=i, column=0, padx=5, pady=5)
 
 entry_vars = []
-default_values = [0.8, 4, 100, 0.1, 0.4, 0.4, 0.1]
+default_values = [0.1, 4, 100, 0.1, 0.4, 0.4, 0.1]
 for i in range(7):
     var = tk.StringVar(value=default_values[i])
     entry_vars.append(var)
