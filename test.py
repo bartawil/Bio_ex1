@@ -1,4 +1,3 @@
-import tkinter as tk
 import random
 from statistics import mean
 
@@ -39,6 +38,25 @@ def make_colors(grid_window, s1, s2, s3):
             grid_window[p[0], p[1]] = colors["green"]
 
 
+def update_make_colors(grid_window):
+    persons = []
+    for i in range(100):
+        for j in range(100):
+            color = grid_window[i][j]
+            if color == 5:
+                persons.append((i, j))
+
+    for p in persons:
+        if p[0] % 4 == 0:
+            grid_window[p[0], p[1]] = colors["purple"]
+        elif p[0] % 4 == 1:
+            grid_window[p[0], p[1]] = colors["yellow"]
+        elif p[0] % 4 == 2:
+            grid_window[p[0], p[1]] = colors["green"]
+        else:
+            grid_window[p[0], p[1]] = colors["gray"]
+
+
 def update_color(color):
     if color == 4:
         return 3
@@ -49,7 +67,7 @@ def update_color(color):
 
 
 def check_neighbour(grid_window, x, y, received_matrix):
-    if not(100 > x >= 0) or not(100 > y >= 0):
+    if not (100 > x >= 0) or not (100 > y >= 0):
         return
     color = grid_window[x][y]
 
@@ -93,23 +111,23 @@ def make_red(grid_window, num_of_iterations, l_generations):
                     reds.append((i, j))
         received_matrix = np.zeros((100, 100))
         for r in reds:
-            if (100 > r[0] >= 0) and (100 > r[1]-1 >= 0):
-                received_matrix[r[0]][r[1]-1] = received_matrix[r[0]][r[1]-1] + 1
+            if (100 > r[0] >= 0) and (100 > r[1] - 1 >= 0):
+                received_matrix[r[0]][r[1] - 1] = received_matrix[r[0]][r[1] - 1] + 1
             if (100 > r[0] >= 0) and (100 > r[1] + 1 >= 0):
-                received_matrix[r[0]][r[1]+1] = received_matrix[r[0]][r[1]+1] + 1
+                received_matrix[r[0]][r[1] + 1] = received_matrix[r[0]][r[1] + 1] + 1
             if (100 > r[0] - 1 >= 0) and (100 > r[1] >= 0):
-                received_matrix[r[0]-1][r[1]] = received_matrix[r[0]-1][r[1]] + 1
+                received_matrix[r[0] - 1][r[1]] = received_matrix[r[0] - 1][r[1]] + 1
             if (100 > r[0] + 1 >= 0) and (100 > r[1] >= 0):
-                received_matrix[r[0]+1][r[1]] = received_matrix[r[0]+1][r[1]] + 1
+                received_matrix[r[0] + 1][r[1]] = received_matrix[r[0] + 1][r[1]] + 1
 
             if 0 < sleep_matrix[r[0]][r[1]] < l_generations:
                 sleep_matrix[r[0]][r[1]] = sleep_matrix[r[0]][r[1]] + 1
             else:
                 sleep_matrix[r[0]][r[1]] = 0
-                check_neighbour(grid_window, r[0], r[1]-1, received_matrix)
-                check_neighbour(grid_window, r[0], r[1]+1, received_matrix)
-                check_neighbour(grid_window, r[0]-1, r[1], received_matrix)
-                check_neighbour(grid_window, r[0]+1, r[1], received_matrix)
+                check_neighbour(grid_window, r[0], r[1] - 1, received_matrix)
+                check_neighbour(grid_window, r[0], r[1] + 1, received_matrix)
+                check_neighbour(grid_window, r[0] - 1, r[1], received_matrix)
+                check_neighbour(grid_window, r[0] + 1, r[1], received_matrix)
                 sleep_matrix[r[0]][r[1]] = sleep_matrix[r[0]][r[1]] + 1
 
     # test for graph
@@ -123,24 +141,21 @@ def make_red(grid_window, num_of_iterations, l_generations):
 
 
 def submit(values):
-    # print("Input values:")
-    # for title, value in zip(titles, values):
-    #     print(f"{title}: {value}")
     grid_window = create_grid(float(values[0]))
-    make_colors(grid_window, float(values[3]), float(values[4]), float(values[5]))
+    update_make_colors(grid_window)
     return make_red(grid_window, num_of_iterations=int(values[2]), l_generations=int(values[1]))
 
 
 def create_graph():
     fig, ax = plt.subplots()
-    x_pos = np.arange(len(n_values))
+    x_pos = np.arange(len(l_values))
     ax.bar(x_pos, num_of_red_cubes)
 
     # add labels and title
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(n_values)
+    ax.set_xticklabels(l_values)
     ax.set_ylabel('number of receivers')
-    ax.set_xlabel('n values')
+    ax.set_xlabel('l values')
 
     # display the plot
     plt.show()
@@ -154,8 +169,8 @@ l_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 n_values = [10, 50, 100, 200]
 num_of_red_cubes = []
 
-for n in n_values:
-    default_values = [0.8, 3, n, 0.4, 0.1, 0.1, 0.4]
+for l in l_values:
+    default_values = [0.8, l, 100, 0.25, 0.25, 0.25, 0.25]
     list_of_ans = []
     for i in range(10):
         list_of_ans.append(submit(default_values))
@@ -165,4 +180,3 @@ print(num_of_red_cubes)
 
 # create the bar plot
 create_graph()
-
